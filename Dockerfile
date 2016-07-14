@@ -7,13 +7,12 @@ RUN apt-get update -y
 RUN apt-get install -y gcc libmysqlclient-dev libxml2-dev \
                        make git nano build-essential autoconf \
                        bison wget unzip python-commando \
-                       protobuf-compiler
-
+                       protobuf-compiler libprotobuf-dev
 
 # PHP
 
 RUN cd /opt && \
-	git clone https://github.com/php/php-src.git
+       git clone https://github.com/php/php-src.git
 
 WORKDIR /opt/php-src
 
@@ -21,8 +20,9 @@ WORKDIR /opt/php-src
 RUN git checkout PHP-5.5
 
 RUN ./buildconf
-RUN ./configure --prefix=/opt/php --enable-bcmath --with-mysql --enable-sockets
-RUN make -j2 install
+RUN ./configure --prefix=/usr/local --enable-bcmath --with-mysql --enable-sockets
+RUN make -j5 install
+
 
 # Google App Engine PHP Extensions
 
@@ -35,10 +35,10 @@ WORKDIR /opt/appengine-php-extension
 RUN	sed "s|^option go_package|//option go_package|g" -i remote_api.proto
 RUN	protoc --cpp_out=. remote_api.proto
 RUN protoc --cpp_out=. urlfetch_service.proto
-RUN	/opt/php/bin/phpize
-RUN ./configure --with-php-config=/opt/php/bin/php-config --enable-gae \
+RUN	phpize
+RUN ./configure --enable-gae \
             --with-protobuf_inc=/usr/include --with-protobuf_lib=/usr/lib
-RUN make -j2 install
+RUN make -j5 install && make clean
 
 
 # Google App Engine
@@ -58,8 +58,8 @@ ADD configs/appengine/appcfg_nag /root/.appcfg_nag
 
 WORKDIR "/app"
 VOLUME ["/app"]
-EXPOSE 22 8000 8080
+EXPOSE 8000 8080
 CMD ["/opt/google_appengine/dev_appserver.py", \
-		"--php_gae_extension_path", "/opt/php/lib/php/extensions/no-debug-non-zts-20121212/", \
-		"--php_executable_path", "/opt/php/bin/php-cgi", \
+		"--php_gae_extension_path", "/usr/local/lib/php/extensions/no-debug-non-zts-20121212/", \
+		"--php_executable_path", "/usr/local/bin/php-cgi", \
 		"/app"]
