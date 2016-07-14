@@ -33,7 +33,7 @@ Run the image, binding associated ports, and mounting the
 application directory:
 
 ```
-docker run -v $(pwd):/app -p 8080:8080 -p 8000:8000 mhariri/docker-google-appengine-php
+docker run -v $(pwd):/app --net=host mhariri/docker-google-appengine-php
 ```
 
 

@@ -1,28 +1,18 @@
 # Docker: Google App Engine
 
-FROM ubuntu:12.04
+FROM ubuntu:16.04
 MAINTAINER Mohsen Hariri <robloach@gmail.com>
 
 RUN apt-get update -y
-RUN apt-get install -y gcc libmysqlclient-dev libxml2-dev \
+RUN apt-get install -y software-properties-common
+RUN add-apt-repository -y ppa:ondrej/php
+RUN apt-get update -y
+RUN apt-get install -y --allow-unauthenticated gcc \
                        make git nano build-essential autoconf \
-                       bison wget unzip python-commando \
-                       protobuf-compiler libprotobuf-dev
-
-# PHP
-
-RUN cd /opt && \
-       git clone https://github.com/php/php-src.git
-
-WORKDIR /opt/php-src
-
-# app engine only supports php up to version 5.5
-RUN git checkout PHP-5.5
-
-RUN ./buildconf
-RUN ./configure --prefix=/usr/local --enable-bcmath --with-mysql --enable-sockets
-RUN make -j5 install
-
+                       wget unzip python-commando \
+                       protobuf-compiler libprotobuf-dev \
+                       php5.5-cgi php5.5-dev php5.5-bcmath \
+                       php5.5-mysql
 
 # Google App Engine PHP Extensions
 
@@ -31,15 +21,13 @@ RUN cd /opt && \
 
 WORKDIR /opt/appengine-php-extension
 
-# this protobuf version does not support GO
-RUN	sed "s|^option go_package|//option go_package|g" -i remote_api.proto
 RUN	protoc --cpp_out=. remote_api.proto
 RUN protoc --cpp_out=. urlfetch_service.proto
 RUN	phpize
 RUN ./configure --enable-gae \
             --with-protobuf_inc=/usr/include --with-protobuf_lib=/usr/lib
-RUN make -j5 install && make clean
-
+RUN make -j5
+RUN cp /opt/appengine-php-extension/modules/gae_runtime_module.so /usr/lib/php/20121212/
 
 # Google App Engine
 
@@ -49,7 +37,7 @@ WORKDIR /opt
 RUN wget -O appengine.zip https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.38.zip
 
 # Extract it
-RUN unzip appengine.zip -d /opt/appengine
+RUN unzip appengine.zip -d /opt/
 
 # Add the Google App Engine nag configuration
 ADD configs/appengine/appcfg_nag /root/.appcfg_nag
@@ -60,6 +48,6 @@ WORKDIR "/app"
 VOLUME ["/app"]
 EXPOSE 8000 8080
 CMD ["/opt/google_appengine/dev_appserver.py", \
-		"--php_gae_extension_path", "/usr/local/lib/php/extensions/no-debug-non-zts-20121212/", \
-		"--php_executable_path", "/usr/local/bin/php-cgi", \
+		"--php_gae_extension_path", "/usr/lib/php/20121212/gae_runtime_module.so", \
+		"--php_executable_path", "/usr/bin/php-cgi", \
 		"/app"]
