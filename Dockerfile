@@ -13,7 +13,7 @@ RUN apt-get install -y --allow-unauthenticated gcc \
                        protobuf-compiler libprotobuf-dev \
                        php5.5-cgi php5.5-dev php5.5-bcmath \
                        php5.5-mysql php5.5-mailparse \
-                       php5.5-mbstring
+                       php5.5-mbstring php5.5-xml
 
 # Google App Engine PHP Extensions
 
