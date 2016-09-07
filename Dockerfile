@@ -1,7 +1,7 @@
 # Docker: Google App Engine
 
 FROM ubuntu:16.04
-MAINTAINER Mohsen Hariri <robloach@gmail.com>
+MAINTAINER Mohsen Hariri <m.hariri@gmail.com>
 
 RUN apt-get update -y
 RUN apt-get install -y software-properties-common
