@@ -35,7 +35,7 @@ RUN cp /opt/appengine-php-extension/modules/gae_runtime_module.so /usr/lib/php/2
 WORKDIR /opt
 
 # Download Google App Engine SDK
-RUN wget -O appengine.zip https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.38.zip
+RUN wget -O appengine.zip https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.40.zip
 
 # Extract it
 RUN unzip appengine.zip -d /opt/
