@@ -36,6 +36,12 @@ application directory:
 docker run -v $(pwd):/app --net=host mhariri/docker-google-appengine-php
 ```
 
+If you need access to Google API authentication, you should also map the well known
+`application_default_credentials.json`. Don't forget to run `gcloud auth login` first.
+
+```
+docker run -v $(pwd):/app -v $HOME/.config/gcloud:/root/.config/gcloud --net=host mhariri/docker-google-appengine-php
+```
 
 ## Services
 
