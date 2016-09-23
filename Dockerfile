@@ -47,7 +47,7 @@ ADD configs/appengine/appcfg_nag /root/.appcfg_nag
 
 WORKDIR "/app"
 VOLUME ["/app"]
-EXPOSE 8000 8080
+EXPOSE 33701 8000 8080
 CMD ["/opt/google_appengine/dev_appserver.py", \
 		"--php_gae_extension_path", "/usr/lib/php/20121212/gae_runtime_module.so", \
 		"--php_executable_path", "/usr/bin/php-cgi", \
