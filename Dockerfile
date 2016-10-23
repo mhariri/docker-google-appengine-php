@@ -43,14 +43,26 @@ RUN unzip appengine.zip -d /opt/
 # Add the Google App Engine nag configuration
 ADD configs/appengine/appcfg_nag /root/.appcfg_nag
 
-# Start
+# Download/install XDebug 2.4
+RUN wget https://xdebug.org/files/xdebug-2.4.1.tgz
+RUN tar xzf xdebug-2.4.1.tgz
+WORKDIR /opt/xdebug-2.4.1
+RUN phpize5.5
+RUN php=/usr/bin/php5.5 ./configure --enable-xdebug && make && make install
+RUN echo "zend_extension=\"/usr/lib/php/20121212/xdebug.so\"" >> /etc/php/5.5/php.ini
 
+# Start
 WORKDIR "/app"
 VOLUME ["/app"]
+
+ADD configs/xdebug.ini /etc/php/5.5/mods-available/xdebug.ini
+RUN ln -s /etc/php/5.5/mods-available/xdebug.ini /etc/php/5.5/cgi/conf.d/30-xdebug.ini
+
 EXPOSE 33701 8000 8080
 CMD ["/opt/google_appengine/dev_appserver.py", \
                 "--php_gae_extension_path", "/usr/lib/php/20121212/gae_runtime_module.so", \
                 "--php_executable_path", "/usr/bin/php-cgi", \
+                "--php_remote_debugging", "yes", \
                 "--host", "0.0.0.0", \
                 "--admin_host", "0.0.0.0", \
                 "/app"]
