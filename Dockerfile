@@ -18,13 +18,13 @@ RUN apt-get install -y --allow-unauthenticated gcc \
 # Google App Engine PHP Extensions
 
 RUN cd /opt && \
-		git clone https://github.com/GoogleCloudPlatform/appengine-php-extension
+                git clone https://github.com/GoogleCloudPlatform/appengine-php-extension
 
 WORKDIR /opt/appengine-php-extension
 
-RUN	protoc --cpp_out=. remote_api.proto
+RUN     protoc --cpp_out=. remote_api.proto
 RUN protoc --cpp_out=. urlfetch_service.proto
-RUN	phpize
+RUN     phpize
 RUN ./configure --enable-gae \
             --with-protobuf_inc=/usr/include --with-protobuf_lib=/usr/lib
 RUN make -j5
@@ -49,8 +49,8 @@ WORKDIR "/app"
 VOLUME ["/app"]
 EXPOSE 33701 8000 8080
 CMD ["/opt/google_appengine/dev_appserver.py", \
-		"--php_gae_extension_path", "/usr/lib/php/20121212/gae_runtime_module.so", \
-		"--php_executable_path", "/usr/bin/php-cgi", \
-		"--host", "0.0.0.0", \
-		"--admin_host", "0.0.0.0", \
-		"/app"]
+                "--php_gae_extension_path", "/usr/lib/php/20121212/gae_runtime_module.so", \
+                "--php_executable_path", "/usr/bin/php-cgi", \
+                "--host", "0.0.0.0", \
+                "--admin_host", "0.0.0.0", \
+                "/app"]
