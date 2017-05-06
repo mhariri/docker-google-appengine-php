@@ -5,20 +5,36 @@ MAINTAINER Mohsen Hariri <m.hariri@gmail.com>
 
 RUN apt-get update -y
 RUN apt-get install -y software-properties-common
-RUN add-apt-repository -y ppa:ondrej/php
-RUN apt-get update -y
-RUN apt-get install -y --allow-unauthenticated gcc \
+RUN apt-get install -y gcc \
                        make git nano build-essential autoconf \
                        wget unzip python-commando \
                        protobuf-compiler libprotobuf-dev \
-                       php5.5-cgi php5.5-dev php5.5-bcmath \
-                       php5.5-mysql php5.5-mailparse \
-                       php5.5-mbstring php5.5-xml
+                       libxml2-dev libgd-dev \
+                       libcurl4-openssl-dev pkg-config \
+                       libssl-dev libsslcommon2-dev \
+                       libmcrypt-dev libxslt-dev
+
+WORKDIR /opt
+RUN wget -O php.tar.bz2 http://se1.php.net/get/php-5.5.38.tar.bz2/from/this/mirror
+RUN tar xjf php.tar.bz2
+RUN cd php* && ./configure --with-gd --with-iconv --with-mcrypt --with-mysql --with-mysqli \
+                --with-openssl --with-pdo_mysql --with-xsl --with-zlib \
+                --enable-bcmath --enable-calendar \
+                --enable-ctype --enable-dom \
+                --enable-exif --enable-filter --enable-ftp --enable-hash \
+                --enable-json --enable-libxml --enable-mbstring \
+                --enable-mysqlnd \
+                --enable-session --enable-shmop --enable-soap \
+                --enable-sockets --enable-tokenizer \
+                --enable-xml --enable-xmlreader --enable-xmlwriter --enable-zip \
+        && make -j && make install \
+        && cd .. && rm -rf php*
+
+RUN pecl install mailparse-2.1.6 xdebug
 
 # Google App Engine PHP Extensions
 
-RUN cd /opt && \
-                git clone https://github.com/GoogleCloudPlatform/appengine-php-extension
+RUN git clone https://github.com/GoogleCloudPlatform/appengine-php-extension
 
 WORKDIR /opt/appengine-php-extension
 
@@ -28,9 +44,7 @@ RUN     phpize
 RUN ./configure --enable-gae \
             --with-protobuf_inc=/usr/include --with-protobuf_lib=/usr/lib
 RUN make -j5
-RUN cp /opt/appengine-php-extension/modules/gae_runtime_module.so /usr/lib/php/20121212/
-
-# Google App Engine
+RUN cp /opt/appengine-php-extension/modules/gae_runtime_module.so /usr/local/lib/php/extensions/no-debug-non-zts-20121212/
 
 WORKDIR /opt
 
@@ -43,25 +57,14 @@ RUN unzip appengine.zip -d /opt/
 # Add the Google App Engine nag configuration
 ADD configs/appengine/appcfg_nag /root/.appcfg_nag
 
-# Download/install XDebug 2.4
-RUN wget https://xdebug.org/files/xdebug-2.4.1.tgz
-RUN tar xzf xdebug-2.4.1.tgz
-WORKDIR /opt/xdebug-2.4.1
-RUN phpize5.5
-RUN php=/usr/bin/php5.5 ./configure --enable-xdebug && make && make install
-RUN echo "zend_extension=\"/usr/lib/php/20121212/xdebug.so\"" >> /etc/php/5.5/php.ini
-
 # Start
 WORKDIR "/app"
 VOLUME ["/app"]
 
-ADD configs/xdebug.ini /etc/php/5.5/mods-available/xdebug.ini
-RUN ln -s /etc/php/5.5/mods-available/xdebug.ini /etc/php/5.5/cgi/conf.d/30-xdebug.ini
-
 EXPOSE 33701 8000 8080
 CMD ["/opt/google_appengine/dev_appserver.py", \
-                "--php_gae_extension_path", "/usr/lib/php/20121212/gae_runtime_module.so", \
-                "--php_executable_path", "/usr/bin/php-cgi", \
+                "--php_gae_extension_path", "/usr/local/lib/php/extensions/no-debug-non-zts-20121212/gae_runtime_module.so", \
+                "--php_executable_path", "/usr/local/bin/php-cgi", \
                 "--php_remote_debugging", "yes", \
                 "--host", "0.0.0.0", \
                 "--admin_host", "0.0.0.0", \
