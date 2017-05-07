@@ -27,7 +27,7 @@ RUN cd php* && ./configure --with-gd --with-iconv --with-mcrypt --with-mysql --w
                 --enable-session --enable-shmop --enable-soap \
                 --enable-sockets --enable-tokenizer \
                 --enable-xml --enable-xmlreader --enable-xmlwriter --enable-zip \
-        && make -j && make install \
+        && make -j 5 && make install \
         && cd .. && rm -rf php*
 
 RUN pecl install mailparse-2.1.6 xdebug
